@@ -23,6 +23,10 @@ export const intiateApp = (app, express) => {
 
   app.use(globalError, deleteFromCloudnairy, deleteFromDB);
 
+  app.use("/", (req, res) => {
+    res.json("Welcome ^_^");
+  });
+
   app.listen(port, () => {
     console.log(`server listening on port ${port}!`);
   });

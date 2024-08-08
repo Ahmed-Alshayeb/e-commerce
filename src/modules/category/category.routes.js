@@ -11,7 +11,6 @@ const categoryRouter = Router();
 categoryRouter.get(
   "/",
   validation(CV.getCategoriesValidation),
-  auth([roleSystem.Admin, roleSystem.User]),
   CC.getCategories
 );
 
