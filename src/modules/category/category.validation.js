@@ -23,6 +23,3 @@ export const deleteCategoryValidation = {
   headers: generalFields.headers.required(),
 };
 
-export const getCategoriesValidation = {
-  headers: generalFields.headers.required(),
-};

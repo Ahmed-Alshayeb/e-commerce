@@ -8,11 +8,7 @@ import { multerHost, validExtension } from "../../middleware/uploadImage.js";
 
 const categoryRouter = Router();
 
-categoryRouter.get(
-  "/",
-  validation(CV.getCategoriesValidation),
-  CC.getCategories
-);
+categoryRouter.get("/", CC.getCategories);
 
 categoryRouter.post(
   "/",
