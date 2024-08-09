@@ -8,7 +8,7 @@ export const intiateApp = (app, express) => {
   const port = process.env.PORT;
 
   app.use((req, res, next) => {
-    if (req.originalUrl === "/orders/webhook") {
+    if (req.originalUrl == "/orders/webhook") {
       next();
     } else {
       express.json()(req, res, next);
