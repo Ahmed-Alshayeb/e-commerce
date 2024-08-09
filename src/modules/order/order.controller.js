@@ -7,6 +7,8 @@ import couponModel from "../../../DB/models/coupon.model.js";
 import orderModel from "../../../DB/models/order.model.js";
 import { createInvoice } from "../../utils/pdf.js";
 import sendEmail from "../../service/sendEmail.service.js";
+import { payment } from "../../utils/payment.js";
+import Stripe from "stripe";
 
 // @desc    create order
 // @route   POST /orders
@@ -16,7 +18,10 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 
   // check if coupon exists or expired
   if (couponCode) {
-    const coupon = await couponModel.findOne({ code: couponCode, usedBy: { $nin: [req.user._id] } });
+    const coupon = await couponModel.findOne({
+      code: couponCode,
+      //  usedBy: { $nin: [req.user._id] }
+    });
     if (!coupon || coupon.toDate < Date.now()) {
       return next(new AppError(400, "coupon not found or code aleady used or expired"));
     }
@@ -84,30 +89,68 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     await cartModel.findOneAndUpdate({ user: req.user._id }, { products: [] });
   }
 
-  // create invoice
-  const invoice = {
-    shipping: {
-      name: req.user.name,
-      address: req.user.address,
-      phone: req.user.phone,
-    },
-    items: order.products,
-    unitCost: order.subPrice * 100,
-    paid: order.totalPrice * 100,
-    invoice_nr: order._id,
-    subtotal: order.subPrice * 100,
-  };
+  // // create invoice
+  // const invoice = {
+  //   shipping: {
+  //     name: req.user.name,
+  //     address: req.user.address,
+  //     phone: req.user.phone,
+  //   },
+  //   items: order.products,
+  //   unitCost: order.subPrice * 100,
+  //   paid: order.totalPrice * 100,
+  //   invoice_nr: order._id,
+  //   subtotal: order.subPrice * 100,
+  // };
 
-  await createInvoice(invoice, "invoice.pdf");
+  // await createInvoice(invoice, "invoice.pdf");
 
-  // send invoice to email
-  await sendEmail(req.user.email, "invoice", `<h1>Your Orde</h1>`, [
-    {
-      path: "invoice.pdf",
-      contentType: "application/pdf",
-    },
-  ]);
+  // // send invoice to email
+  // await sendEmail(req.user.email, "invoice", `<h1>Your Orde</h1>`, [
+  //   {
+  //     path: "invoice.pdf",
+  //     contentType: "application/pdf",
+  //   },
+  // ]);
 
+  // payment
+  if (paymentMethod == "card") {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    if (req.body?.coupon) {
+      const coupon = await stripe.coupons.create({
+        percent_off: req.body.coupon.amount,
+        duration: "once",
+      });
+      req.body.couponId = coupon.id;
+    }
+    const session = await payment({
+      stripe,
+      payment_method_types: ["card"],
+      mode: "payment",
+      customer_email: req.user.email,
+      line_items: order.products.map((product) => {
+        return {
+          price_data: {
+            currency: "egp",
+            product_data: {
+              name: product.name,
+            },
+            unit_amount: product.price * 100,
+          },
+          quantity: product.quantity,
+        };
+      }),
+      metadata: {
+        orderId: order._id.toString(),
+      },
+      success_url: `${req.protocol}://${req.headers.host}/orders/success/${order._id}`,
+      cancel_url: `${req.protocol}://${req.headers.host}/orders/canceled/${order._id}`,
+      discounts: req.body?.coupon ? [{ coupon: req.body.couponId }] : [],
+    });
+
+    return res.status(200).json({ url: session.url, order });
+  }
   // role back DB
   req.data = {
     model: "order",
