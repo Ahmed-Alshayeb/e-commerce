@@ -13,7 +13,7 @@ orderRouter.post(
   auth([roleSystem.Admin, roleSystem.User]),
   OC.createOrder
 );
- 
+
 orderRouter.patch(
   "/:id",
   validation(OV.canceleOrderValidation),
@@ -21,5 +21,6 @@ orderRouter.patch(
   OC.canceleOrder
 );
 
+orderRouter.post("/webhook", express.raw({ type: "application/json" }), OC.webhook);
+
 export default orderRouter;
- 

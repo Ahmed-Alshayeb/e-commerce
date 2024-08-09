@@ -7,7 +7,13 @@ import { deleteFromCloudnairy } from "./utils/deleteFromCloudnairy.js";
 export const intiateApp = (app, express) => {
   const port = process.env.PORT;
 
-  app.use(express.json());
+  app.use((req, res, next) => {
+    if (req.originalUrl === "/orders/webhook") {
+      next();
+    } else {
+      express.json()(req, res, next);
+    }
+  });
 
   app.use("/users", routes.userRouter);
   app.use("/categories", routes.categoryRouter);
@@ -24,7 +30,7 @@ export const intiateApp = (app, express) => {
   app.use(globalError, deleteFromCloudnairy, deleteFromDB);
 
   app.use("/", (req, res) => {
-    res.json("Welcome ^_^");
+    res.json("Welcome ^__^");
   });
 
   app.listen(port, () => {
