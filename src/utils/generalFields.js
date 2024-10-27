@@ -25,6 +25,7 @@ export const generalFields = {
   }),
 
   headers: joi.object({
+    "cookie": joi.string(),
     "postman-token": joi.string(),
     "cache-control": joi.string(),
     "content-type": joi.string(),

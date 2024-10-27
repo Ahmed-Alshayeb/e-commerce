@@ -3,6 +3,8 @@ import * as routes from "./indexRoutes.js";
 import { globalError } from "./middleware/error.js";
 import { deleteFromDB } from "./utils/deleteFromDB.js";
 import { deleteFromCloudnairy } from "./utils/deleteFromCloudnairy.js";
+import { createHandler } from "graphql-http/lib/use/express";
+import { schema } from "./modules/product/graphQL/schema.js";
 
 export const intiateApp = (app, express) => {
   const port = process.env.PORT;
@@ -25,12 +27,15 @@ export const intiateApp = (app, express) => {
   app.use("/orders", routes.orderRouter);
   app.use("/reviews", routes.reviewRouter);
 
+  // GraphQL
+  app.use("/graphql", createHandler({ schema }));
+
   connectDB();
 
   app.use(globalError, deleteFromCloudnairy, deleteFromDB);
 
   app.use("/", (req, res) => {
-    res.json("Welcome ^__^");
+    res.json({ msg: "Welcome ^_^" });
   });
 
   app.listen(port, () => {

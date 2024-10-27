@@ -4,6 +4,7 @@ import { generalFields } from "../../utils/generalFields.js";
 export const createProductValidation = {
   body: joi
     .object({
+      
       name: joi.string().min(2).max(30),
       description: joi.string().min(10).max(1000),
       category: generalFields.id,
