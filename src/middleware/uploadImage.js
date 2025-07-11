@@ -7,7 +7,7 @@ export const validExtension = {
   video: ["video/mp4", "video/mkv"],
 };
 
-export const multerHost = (customValidation = ["image/png", "image/jpg", "image/jpeg"]) => {
+export const multerHost = (customValidation =["image/png", "image/jpg", "image/jpeg"]) => {
   const storage = multer.diskStorage({});
 
   const fileFilter = function (req, file, cb) {

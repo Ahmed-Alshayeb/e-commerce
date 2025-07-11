@@ -48,7 +48,9 @@ export const signUp = asyncHandler(async (req, res, next) => {
     id: user._id,
   };
 
-  user ? res.status(201).json({ msg: "success", user }) : next(new AppError(400, "user not created"));
+  user
+    ? res.status(201).json({ msg: "success", user })
+    : next(new AppError(400, "user not created"));
 });
 
 // @desc    Verify Email
@@ -89,7 +91,11 @@ export const rfToken = asyncHandler(async (req, res, next) => {
   });
   const link = `${req.protocol}://${req.headers.host}/users/verifyEmail/${token}`;
 
-  await sendEmail(decoded.email, "Verify your account", `<a href="${link}"> verify your account</a>`);
+  await sendEmail(
+    decoded.email,
+    "Verify your account",
+    `<a href="${link}"> verify your account</a>`
+  );
 
   res.status(200).json({ msg: "success" });
 });
@@ -124,7 +130,10 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
 
   const hash = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
 
-  await userModel.findOneAndUpdate({ email }, { password: hash, OTP: "", passwordChangedAt: Date.now() });
+  await userModel.findOneAndUpdate(
+    { email },
+    { password: hash, OTP: "", passwordChangedAt: Date.now() }
+  );
   res.status(200).json({ msg: "password updated successfully" });
 });
 
@@ -137,9 +146,14 @@ export const signIn = asyncHandler(async (req, res, next) => {
   if (!user || !(await bcrypt.compare(password, user.password)))
     return next(new AppError(400, "invalid email or password"));
 
-  const token = await jwt.sign({ email, id: user._id, role: user.role }, process.env.JWT_SECRET);
+  const token = await jwt.sign(
+    { email, id: user._id, role: user.role },
+    process.env.JWT_SECRET
+  );
   await userModel.findOneAndUpdate({ email }, { loggedIn: true });
-  res.status(200).json({ msg: "success", token });
+  res
+    .status(200)
+    .json({ status: "success", msg: `welcome ${user.name}`, token });
 });
 
 // @desc    Get all users
@@ -190,6 +204,9 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
     return next(new AppError(400, "invalid old password"));
   }
   const hash = await bcrypt.hash(password, 10);
-  const newUser = await userModel.findOneAndUpdate({ _id: req.user.id }, { password: hash });
+  const newUser = await userModel.findOneAndUpdate(
+    { _id: req.user.id },
+    { password: hash }
+  );
   res.status(200).json({ msg: "password updated success" });
 });

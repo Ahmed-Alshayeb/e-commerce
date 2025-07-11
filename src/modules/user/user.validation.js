@@ -37,7 +37,7 @@ export const signInValidation = {
 export const updateUserValidation = {
   body: joi
     .object({
-      name: joi.string().alphanum().min(3).max(30),
+      name: joi.string().min(3).max(30),
       email: joi.string().email(),
       phone: joi.string().length(11),
       age: joi.array().items(joi.number().min(18).max(100)),
@@ -50,7 +50,7 @@ export const updateUserValidation = {
       cPassword: joi.string().valid(joi.ref("password")),
       role: joi.string().valid(roleSystem.Admin, roleSystem.User).optional(),
     })
-    .options({ presence: "required" }),
+    .options({ presence: "optional" }),
 
   headers: generalFields.headers.required(),
 };
